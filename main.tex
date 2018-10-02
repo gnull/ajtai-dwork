@@ -1,0 +1,80 @@
+\documentclass[oneside, a4paper]{article}
+
+\usepackage[T1,T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{url, hyperref}
+\usepackage[shortlabels]{enumitem}
+\usepackage{amssymb,amsthm,amsmath,mathtools}
+\usepackage{listings}
+
+\usepackage{geometry}
+ \geometry{
+   a4paper,
+   left=20mm,
+   right=20mm,
+ }
+
+\usepackage{filecontents}
+\begin{filecontents}{main.bib}
+@article{ajtaidwork,
+  author    = {Mikl{\'{o}}s Ajtai and
+               Cynthia Dwork},
+  title     = {The First and Fourth Public-Key Cryptosystems with Worst-Case/Average-Case
+               Equivalence.},
+  journal   = {Electronic Colloquium on Computational Complexity {(ECCC)}},
+  volume    = {14},
+  number    = {097},
+  year      = {2007},
+  url       = {http://eccc.hpi-web.de/eccc-reports/2007/TR07-097/index.html},
+  timestamp = {Tue, 14 Aug 2018 17:08:03 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/eccc/AjtaiD07},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+\end{filecontents}
+
+\newtheorem{thm}{Утверждение}
+\makeatletter
+\@addtoreset{thm}{section}
+\makeatother
+
+\renewcommand{\thesection}{}
+\renewcommand{\thesubsection}{}
+
+\DeclareMathOperator{\lcm}{LCM}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\DeclarePairedDelimiter\ang{\langle}{\rangle}
+
+\DeclareRobustCommand{\divby}{%
+  \mathrel{\vbox{\baselineskip.65ex\lineskiplimit0pt\hbox{.}\hbox{.}\hbox{.}}}%
+}
+
+\begin{document}
+
+\title{Конспект статьи \\ \foreignlanguage{english}{<<The First and Fourth Public-Key Cryptosystems
+with Worst-Case/Average-Case Equivalence>>  \cite{ajtaidwork}}}
+\author{Олейников Иван \\ \url{ivan.oleynikov95@gmail.com}}
+\date{\today}
+\maketitle
+
+\section{Введение}
+
+BibTeX provides for the storage of all references in an external, flat-file
+database. (BibLaTeX uses this same syntax.) This database can be referenced in
+any LaTeX document, and citations made to any record that is contained within
+the file. This is often more convenient than embedding them at the end of every
+document written; a centralized bibliography source can be linked to as many
+documents as desired (write once, read many!). Of course, bibliographies can
+be split over as many files as one wishes, so there can be a file containing
+sources concerning topic A (a.bib) and another concerning topic B (b.bib). When
+writing about topic AB, both of these files can be linked into the document
+(perhaps in addition to sources ab.bib specific to topic AB).
+
+\bibliographystyle{plain}
+\foreignlanguage{english}{
+  \bibliography{main}
+}
+
+\end{document}
