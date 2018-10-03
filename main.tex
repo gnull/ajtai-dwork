@@ -16,33 +16,24 @@
  }
 
 \usepackage{filecontents}
-\begin{filecontents}{main.bib}
-@article{ajtaidwork,
-  author    = {Mikl{\'{o}}s Ajtai and
-               Cynthia Dwork},
-  title     = {The First and Fourth Public-Key Cryptosystems with Worst-Case/Average-Case
-               Equivalence.},
-  journal   = {Electronic Colloquium on Computational Complexity {(ECCC)}},
-  volume    = {14},
-  number    = {097},
-  year      = {2007},
-  url       = {http://eccc.hpi-web.de/eccc-reports/2007/TR07-097/index.html},
-  timestamp = {Tue, 14 Aug 2018 17:08:03 +0200},
-  biburl    = {https://dblp.org/rec/bib/journals/eccc/AjtaiD07},
-  bibsource = {dblp computer science bibliography, https://dblp.org}
-}
-\end{filecontents}
 
-\newtheorem{thm}{Утверждение}
-\makeatletter
-\@addtoreset{thm}{section}
-\makeatother
+\theoremstyle{plain}
+\newtheorem{theorem}{Теорема}
+\newtheorem{lemma}[theorem]{Лемма}
+\theoremstyle{definition}
+\newtheorem{definition}{Определение}
+\newtheorem{example}{Пример}
+\theoremstyle{remark}
+\newtheorem{remark}{Замечание}
 
-\renewcommand{\thesection}{}
-\renewcommand{\thesubsection}{}
+% \renewcommand{\thesection}{}
+% \renewcommand{\thesubsection}{}
 
 \DeclareMathOperator{\lcm}{LCM}
-\DeclareMathOperator*{\argmax}{arg\,max}
+
+\newcommand\p{\ensuremath \mathbf p}
+\newcommand\N{\ensuremath \mathcal N}
+\newcommand\R{\ensuremath \mathbb R}
 
 \DeclarePairedDelimiter\abs{\lvert}{\rvert}
 \DeclarePairedDelimiter\ang{\langle}{\rangle}
@@ -59,12 +50,89 @@ with Worst-Case/Average-Case Equivalence>>  \cite{ajtaidwork}}}
 \date{\today}
 \maketitle
 
-\section{Введение}
+Этот документ содержит конспект того, что автор планировал рассказать за одно
+занятие на семинара по теоретической информатике в СПбГУ
+\footnote{\url{https://groups.google.com/forum/\#!forum/spbsu-teorseminar}}.
+Секции << \dots >> были разобраны на семинаре устно, поэтому описаны очень
+кратко, с расчётом на посетившего семинар читателя, к тому же они составляют
+самую простую часть статьи и их нетрудно изучить самостоятельно. Остальные
+секции << \dots >> содержат наиболее трудную для понимания часть статьи~---
+докладчику не удалось разобрать их к началу семинара, поэтому после семинара был
+написан этот конспект.
 
+% В статье \cite{ajtaidwork} Ajtai и Dwork предлагают улучшенную версию своей
+% первой криптосистемы, основанной на трудности решения в худшем случае задачи
+% \foreignlanguage{english}{$f(n)$-unique Shortest Vector}~--- сокращённо uSVP.
+% Дополнительно в статье рассматривается и первая криптосистема, 
+
+\tableofcontents
+
+\section{Базовые определения}
+
+\begin{definition}[Криптосистема с открытым ключом]
+Криптосистема с открытым ключом~--- это тройка полиномиальных по времени
+вероятностных алгоритмов $(G, E, D)$. Алгоритм $G$ используется для генерации
+пары ключей: публичного $pk$ и секретного $sk$.
+Алгоритм $E$, получив на вход публичный ключ и сообщение $m$, шифрует сообщение
+и выдаёт шифротекст $c$. Имея секретный ключ, можно
+расшифровать сообщение, зашифрованное парным ему открытым ключом:
+\[
+\begin{aligned}
+(pk, sk) &\gets G(1^n), \\
+c        &\gets E(pk, m), \\
+m'       &\gets D(sk, c). \\
+\end{aligned}
+\]
+
+Мы будем требовать, чтобы вероятность корректного восстановления сообщения была
+$> 2/3$ при достаточно больших $n$. Значение $n$~--- это параметр надёжности,
+его смысл станет ясен в следующем определении. (Ещё для удобства будем считать,
+что по $pk$ и $sk$ можно за полином вычислить $1^n$, ведь если это не так,
+можно просто заставить $G$ приписать $1^n$ к обоим ключам.)
+\end{definition}
+
+\begin{definition}[Надёжность криптосистемы]
+Пусть $A$~--- это некоторый вероятностный полиномиальный по времени алгоритм,
+который мы будем называть противником, а $(G, E, D)$~--- криптосистема.
+Рассмотрим такой вероятностный эксперимент:
+\[
+\begin{aligned}
+(pk, sk) &\gets G(1^n)             &  \\
+(m_0, m_1)  &\gets A(pk)           & &\text{ ($A$ выбирает два разных сообщения)} \\
+i        &\gets \{0, 1\}           &  \\
+c        &\gets E(pk, m_i)         & &\text{ ($E$ шифрует случаное из них)} \\
+i'       &\gets A(pk, m_0, m_1, c) & &\text{ ($A$ должен угадать, какое было
+зашифровано)} \\
+\end{aligned}
+\]
+Криптосистема $(G, E, D)$ называется надёжной, если вероятность того, что в
+результате такого вероятностного эксперимента окажется $i = i'$ и $m_0 \neq
+m_1$, пренебрежимо малая функция от $n$. Вероятность берётся по случайным битам
+всех трёх алгоритмов $G$, $A$ и $E$ и по случайному биту $i$.
+
+Функция $f(n)$ называется пренебрежимо малой, если для любого полинома $p(n)$
+$f(n) < p(n)$ при достаточно больших $n$.
+\end{definition}
 
 \bibliographystyle{plain}
 \foreignlanguage{english}{
   \bibliography{main}
 }
+\begin{filecontents}{main.bib}
+@article{ajtaidwork,
+  author    = {Mikl{\'{o}}s Ajtai and
+               Cynthia Dwork},
+  title     = {The First and Fourth Public-Key Cryptosystems with Worst-Case/Average-Case
+               Equivalence.},
+  journal   = {Electronic Colloquium on Computational Complexity {(ECCC)}},
+  volume    = {14},
+  number    = {097},
+  year      = {2007},
+  url       = {http://eccc.hpi-web.de/eccc-reports/2007/TR07-097/index.html},
+  timestamp = {Tue, 14 Aug 2018 17:08:03 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/eccc/AjtaiD07},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+\end{filecontents}
 
 \end{document}
