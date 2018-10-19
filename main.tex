@@ -7,6 +7,7 @@
 \usepackage[shortlabels]{enumitem}
 \usepackage{amssymb,amsthm,amsmath,mathtools}
 \usepackage{listings}
+\usepackage[many]{tcolorbox}
 
 \usepackage{geometry}
  \geometry{
@@ -20,8 +21,9 @@
 \theoremstyle{plain}
 \newtheorem{theorem}{Теорема}
 \newtheorem{lemma}[theorem]{Лемма}
-\theoremstyle{definition}
-\newtheorem{definition}{Определение}
+\newtheorem{exce}{Упражнение}
+\theoremstyle{defn}
+\newtheorem{defn}{Определение}
 \newtheorem{example}{Пример}
 \theoremstyle{remark}
 \newtheorem{remark}{Замечание}
@@ -29,13 +31,32 @@
 % \renewcommand{\thesection}{}
 % \renewcommand{\thesubsection}{}
 
+\newenvironment{definition}[1]{%
+\begin{tcolorbox}[breakable,enhanced]
+\begin{defn}[#1]
+}{%
+\end{defn}
+\end{tcolorbox}
+}
+
+\newenvironment{greybox}[1]{%
+\begin{tcolorbox}[breakable,enhanced, adjusted title = #1]
+}{%
+\end{tcolorbox}
+}
+
 \DeclareMathOperator{\lcm}{LCM}
+\DeclareMathOperator{\round}{Round}
+\DeclareMathOperator{\Span}{span}
 
 \newcommand\p{\ensuremath \mathbf p}
 \newcommand\N{\ensuremath \mathcal N}
+\newcommand\PP{\ensuremath \mathcal P}
 \newcommand\R{\ensuremath \mathbb R}
+\newcommand\Z{\ensuremath \mathbb Z}
 
 \DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}
 \DeclarePairedDelimiter\ang{\langle}{\rangle}
 
 \DeclareRobustCommand{\divby}{%
@@ -60,16 +81,101 @@ with Worst-Case/Average-Case Equivalence>>  \cite{ajtaidwork}}}
 докладчику не удалось разобрать их к началу семинара, поэтому после семинара был
 написан этот конспект.
 
-% В статье \cite{ajtaidwork} Ajtai и Dwork предлагают улучшенную версию своей
-% первой криптосистемы, основанной на трудности решения в худшем случае задачи
-% \foreignlanguage{english}{$f(n)$-unique Shortest Vector}~--- сокращённо uSVP.
-% Дополнительно в статье рассматривается и первая криптосистема, 
+В статье \cite{ajtaidwork} Ajtai и Dwork предлагают улучшенную версию (они её
+называют иногда \foreignlanguage{english}{<<The Compact Cryptosystem>>} или
+\foreignlanguage{english}{<<Fourth Cryptosystem>>}) своей
+первой криптосистемы, основанной на трудности решения в худшем случае задачи
+\foreignlanguage{english}{$f(n)$-unique Shortest Vector}.
+Дополнительно в статье рассматривается и первая криптосистема, но в этом
+конспекте мы о ней говорить не будем.
 
 \tableofcontents
 
-\section{Базовые определения}
+\section{Предварительные определения}
 
+\begin{greybox}{Криптосистема}
+Криптосистема, которую мы опишем в этом конспекте, имеет такие параметры:
+\begin{description}
+\item[$n$]~--- параметр надёжности.
+\item[$l$]~--- длина шифруемого сообщения в битах. Иногда мы будем
+пользоваться для удобства сокращением $m = n + l$.
+\end{description}
 
+\tcblower
+
+И будет работать с данными в таком формате (вектора имеются ввиду из $\R^m$):
+\begin{description}
+\item[Секретный ключ~---] набор взаимно ортогональных векторов $\{u_0 \dots
+u_l\}$. Мы будем пользоваться сокращениями $e_{u_i} = u_i / \norm{u_i}$ и $z_i =
+e_{u_i} / \norm{u_i}$.
+\item[Публичный ключ~---] это
+\begin{itemize}
+\item $V = \{v_0 \dots v_l\}$~--- набор векторов,
+\item $D = \{d_1 \dots d_{m'}\}$~--- набор векторов и
+\item $\displaystyle \PP = \biggl\{\sum_{i=1}^m \alpha_i p_i \mid
+\alpha_1, \alpha_2 \dots \alpha_m \in [0, 1) \biggr\}$~--- параллелепипед,
+задаваемый набором линейно независимых векторов $p_1 \dots p_m$.
+\end{itemize}
+\item[Шифруемое сообщение~---] строка $b_0 b_1 \dots b_l$ из $l+1$ бит.
+\item[Шифротекст~---] вектор $x$.
+\end{description}
+\end{greybox}
+
+\begin{description}
+\item[$\round_\alpha(x)$] $= i\alpha$, где $i = \max \{ i' \in \Z \mid i' \alpha
+\leq x\}$. То есть это $x$ округлённое вниз до ближайшего кратного $\alpha$.
+Если $x$~--- вектор, то будем округлять каждую его координату. Когда мы будем
+выбирать какие-то значения из распределений на вещественных числах, мы всегда
+будем округлять их до ближайших кратных $2^{-\p}$.
+\item[$\N_m(0, \sigma^2)$] --- нормальное распределение на векторах из $\R^m$.
+Вектор из этого распределения получается выбором каждой его координаты
+независимо из одномерного нормального распределения с мат. ожиданием в нуле и
+среднеквадратичным отклонением $\sigma$~--- $\N(0, \sigma^2)$.
+\end{description}
+
+\section{Описание криптосистемы}
+
+Напомним, что публичный ключ~--- это тройка $pk = (\PP, V, D)$, где $\PP$~---
+$m$-мерный параллелепипед, $V$~--- набор из $l+1$ векторов, $D$~--- набор из
+$m'$ векторов. А секретный ключ~--- это набор векторов $\{u_0 \dots u_l\}$. Все
+упомянутые выше вектора лежат в $\R^m$.
+
+\subsection{Генерация ключей}
+
+\subsection{Шифрование} Шифрующий алгоритм принимает на вход сообщение $b_0 b_1 \dots
+b_l$ из $l+1$ бит. Выберем равномерно и независимо $m'$ бит $\delta_1 \dots
+\delta_{m'}$, и вернём в качестве результата шифрования значение
+\[
+x = \sum_{i = 0}^l b_i v_i + \sum_{i = 1}^m 2 \delta_i d_i \mod \PP.
+\]
+
+Первое слагаемое в этой сумме~--- это код сообщения, по нему можно восстановить
+сообщение, даже не имея секретного ключа, что демонстрируется упражнением ниже.
+А второе слагаемое~--- это <<шум>>, который накладывается, чтобы, тот, кто не
+имеет секретного ключа, не мог восстановить данные, но имеющий секретный ключ,
+мог бы избавиться от этого шума.
+
+\begin{exce}
+По значению
+\[
+\sum_{i=0}^l b_i v_i \mod \PP
+\]
+можно восстановить $b_0 \dots b_l$.
+\end{exce}
+
+\subsection{Дешифрование} Дешифрующий алгоритм, которому известен секретный ключ
+$\{u_0 \dots u_l\}$ и открытый ключ $(\PP, V, D)$, получает на вход $x$,
+выданный шифрующим алгоритмом из абзаца выше, и восстанавшивает оригинальное
+сообщение $b_0 \dots b_l$.
+
+\subsection{Доказательство корректности}
+Докажем, что зашифрованные такой криптосистемой данные будут корректно
+восстановлены с пренебрежимо малой вероятностью ошибки.
+
+\section{Доказательство надёжности}
+Сведём решение \foreignlanguage{english}{worst-case} задачи
+\foreignlanguage{english}{Unique Shortest Vector} к взлому определённой нами
+криптосистемы.
 
 \bibliographystyle{plain}
 \foreignlanguage{english}{
