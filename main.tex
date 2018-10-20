@@ -8,6 +8,8 @@
 \usepackage{amssymb,amsthm,amsmath,mathtools}
 \usepackage{listings}
 \usepackage[many]{tcolorbox}
+\usepackage{array}
+\usepackage{float}
 
 \usepackage{geometry}
  \geometry{
@@ -52,6 +54,7 @@
 \newcommand\p{\ensuremath \mathbf p}
 \newcommand\N{\ensuremath \mathcal N}
 \newcommand\PP{\ensuremath \mathcal P}
+\newcommand\LL{\ensuremath \mathcal L}
 \newcommand\R{\ensuremath \mathbb R}
 \newcommand\Z{\ensuremath \mathbb Z}
 
@@ -139,12 +142,14 @@ e_{u_i} / \norm{u_i}$.
 Напомним, какой тип имеют сущности, которыми оперирует криптосистема, и какими
 символами мы их обозначаем.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
-\begin{tabular}{c | c | c}
-Сущность & Обозначение & Формат \\
+\begin{tabular}{c | c | m{7cm}}
+\emph{Сущность} & \emph{Обозначение} & \emph{Формат} \\
 \hline
-Секретный ключ & $\{u_0 \dots u_l\}$ & Набор из $l+1$ ортогональных векторов \\
+\hline
+Секретный ключ & $\{u_0 \dots u_l\}$ & Набор взаимно ортогональных векторов в $\R^m$ \\
+\hline
 Публичный ключ
 &
 \parbox{3cm}{
@@ -156,16 +161,14 @@ D &= \{d_1 \dots d_{m'}\}
 \end{aligned}
 \]
 }
-& \dots \\
+& Три набора векторов в $\R^m$, каждый из которых близок к решётке $L^\bot
+\{u_i\}$ \\
+\hline
 Шифруемое сообщение & $b_0 \dots b_l$ & Строка из $l+1$ бит \\
+\hline
 Код сообщения & $x$ & Внутренняя точка параллелепипеда $\PP^-$ \\
 \end{tabular}
 \end{table}
-
-Напомним, что публичный ключ~--- это тройка $pk = (\PP, V, D)$, где $\PP$~---
-$m$-мерный параллелепипед, $V$~--- набор из $l+1$ векторов, $D$~--- набор из
-$m'$ векторов. А секретный ключ~--- это набор векторов $\{u_0 \dots u_l\}$. Все
-упомянутые выше вектора лежат в $\R^m$.
 
 \subsection{Генерация ключей}
 
